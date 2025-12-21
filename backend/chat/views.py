@@ -77,8 +77,8 @@ class ChatView(APIView):
             try:
                 # Call External N8N Agent
                 payload = {
-                    'session_id': str(session.id),
                     'message': message,
+                    'summary': session.summary,
                     # Add any other context needed
                 }
                 response = requests.post(settings.AI_AGENT_URL, json=payload, timeout=30)
