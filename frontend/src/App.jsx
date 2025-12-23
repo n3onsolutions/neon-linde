@@ -137,6 +137,12 @@ function App() {
                 fetchSessions();
             }
             setMessages(prev => [...prev, { id: res.data.answer_id, text: res.data.answer, sender: 'ai' }]);
+            
+            if (res.data.metrics) {
+                console.group("🚀 Performance Metrics");
+                console.table(res.data.metrics);
+                console.groupEnd();
+            }
         } catch (e) {
             setMessages(prev => [...prev, { id: Date.now(), text: "Error de conexión", sender: 'ai', isError: true }]);
         }

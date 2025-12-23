@@ -69,10 +69,14 @@ class ChatView(APIView):
         # AI Response Logic
         ai_response_text = ""
         ai_summary = session.summary
+        metrics = {}
+        import time
+        start_backend = time.time()
 
         if settings.MOCK_AI_RESPONSE:
             ai_response_text = f"This is a mocked response to: '{message}'. The backend is running in mock mode."
             ai_summary = f"Summary updated for session {session.id} (Mock)"
+            metrics = {"mock_mode": True}
         else:
             try:
                 # Call External N8N Agent
@@ -87,10 +91,13 @@ class ChatView(APIView):
                 
                 ai_response_text = data.get('answer', 'No answer received.')
                 ai_summary = data.get('summary', session.summary)
+                metrics = data.get('metrics', {})
 
             except Exception as e:
                 logger.error(f"Error calling AI Agent: {e}")
                 ai_response_text = "Sorry, I am having trouble connecting to the AI brain right now."
+        
+        metrics["backend_total_processing_ms"] = round((time.time() - start_backend) * 1000, 2)
 
         # Update Session Summary
         if ai_summary:
@@ -109,7 +116,8 @@ class ChatView(APIView):
             'summary': session.summary,
             'question_id': user_interaction.id,
             'answer_id': ai_interaction.id,
-            'answer': ai_response_text
+            'answer': ai_response_text,
+            'metrics': metrics
         })
 
 class SessionListView(generics.ListAPIView):

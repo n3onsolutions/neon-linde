@@ -24,6 +24,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     summary: str
+    metrics: dict
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
@@ -31,9 +32,13 @@ async def chat_endpoint(request: ChatRequest):
         raise HTTPException(status_code=400, detail="Message is required")
 
     try:
-        # Single optimized call for both answer and summary
-        answer, new_summary = await get_ai_response_with_summary(request.message, request.summary)
-        return ChatResponse(answer=answer, summary=new_summary)
+        # Call the updated service directly
+        # Note: We are waiting for the summary here to ensure data consistency with the backend.
+        # Call the updated service directly
+        # Note: We are waiting for the summary here to ensure data consistency with the backend.
+        # Thanks to Gemini Flash, this is still very fast.
+        answer, new_summary, metrics = await get_ai_response_with_summary(request.message, request.summary)
+        return ChatResponse(answer=answer, summary=new_summary, metrics=metrics)
 
     except Exception as e:
         logger.error(f"Error in chat endpoint: {e}")
