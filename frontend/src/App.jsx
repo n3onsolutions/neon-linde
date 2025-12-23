@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { MessageSquare, List, BarChart3, LogOut, Plus, Trash2, Send, User, Bot } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // --- CONFIGURACIÓN DE AXIOS ---
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/chat';
@@ -238,8 +240,29 @@ function App() {
                             </div>
 
                             {/* Bubble */}
-                            <div className={`max-w-[70%] p-4 rounded-2xl shadow-sm text-sm leading-relaxed ${m.sender === 'user' ? 'bg-[#c3002f] text-white rounded-tr-none' : 'bg-gray-100 text-gray-800 rounded-tl-none border border-gray-200'}`}>
-                                {m.text}
+                            <div className={`max-w-[85%] p-4 rounded-2xl shadow-sm text-sm leading-relaxed ${m.sender === 'user' ? 'bg-[#c3002f] text-white rounded-tr-none' : 'bg-gray-100 text-gray-800 rounded-tl-none border border-gray-200'} overflow-hidden`}>
+                                {m.sender === 'ai' ? (
+                                    <ReactMarkdown 
+                                        remarkPlugins={[remarkGfm]}
+                                        className="prose prose-sm prose-red max-w-none break-words"
+                                        components={{
+                                            // Custom table styling
+                                            table: ({node, ...props}) => <div className="overflow-x-auto my-2"><table className="min-w-full divide-y divide-gray-300 border border-gray-300" {...props} /></div>,
+                                            thead: ({node, ...props}) => <thead className="bg-[#c3002f] text-white" {...props} />,
+                                            th: ({node, ...props}) => <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider border-r border-gray-300 last:border-r-0" {...props} />,
+                                            td: ({node, ...props}) => <td className="px-3 py-2 whitespace-nowrap text-sm border-r border-gray-200 last:border-r-0 border-b border-gray-200 last:border-b-0" {...props} />,
+                                            // Ensure lists have proper spacing/checks
+                                            ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-1 my-2" {...props} />,
+                                            ol: ({node, ...props}) => <ol className="list-decimal pl-5 space-y-1 my-2" {...props} />,
+                                            // Bold text
+                                            strong: ({node, ...props}) => <span className="font-bold text-gray-900" {...props} />,
+                                        }}
+                                    >
+                                        {m.text}
+                                    </ReactMarkdown>
+                                ) : (
+                                    <div className="whitespace-pre-wrap">{m.text}</div>
+                                )}
                             </div>
                         </div>
                     ))}
